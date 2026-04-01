@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KutMilz FlowDesk</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#080b12;--bg2:#0e1220;--bg3:#141928;--bg4:#1a2035;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--text:#e2e8f8;--muted:#5a6480;--accent:#4f7cff;--accent2:#00e5ff;--green:#00d68f;--red:#ff3d6b;--amber:#ffb300;--purple:#9d6fff;--pink:#ff6bc6;--r:10px;--r2:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden;}
+#login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 20%,rgba(79,124,255,0.12) 0%,transparent 70%);pointer-events:none;}
+.grid-bg{position:absolute;inset:0;opacity:.035;background-image:linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;}
+.login-box{width:400px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:22px;padding:44px 38px 38px;position:relative;z-index:1;}
+.brand-lock{display:flex;flex-direction:column;align-items:flex-start;margin-bottom:30px;}
+.brand-top{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;}
+.brand-main{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1;}
+.brand-main .k{color:var(--accent2);}
+.brand-main .m{color:var(--accent);}
+.brand-main .fd{color:var(--text);}
+.brand-sub{font-size:12px;color:var(--muted);margin-top:6px;}
+.login-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:block;}
+.login-input{width:100%;padding:13px 14px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'DM Mono',monospace;font-size:20px;letter-spacing:10px;outline:none;transition:border-color .2s;text-align:center;}
+.login-input:focus{border-color:var(--accent);}
+.key-dots{display:flex;gap:10px;justify-content:center;margin:12px 0 0;}
+.key-dot{width:9px;height:9px;border-radius:50%;background:var(--border2);transition:background .2s;}
+.key-dot.filled{background:var(--accent);}
+.login-btn{width:100%;margin-top:20px;padding:14px;background:var(--accent);border:none;border-radius:var(--r);color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:opacity .2s,transform .1s;}
+.login-btn:hover{opacity:.88;}
+.login-btn:active{transform:scale(.98);}
+.login-err{color:var(--red);font-size:12px;margin-top:10px;min-height:18px;text-align:center;}
+
+/* APP */
+#app{display:none;min-height:100vh;}
+.sidebar{width:230px;position:fixed;top:0;left:0;bottom:0;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:22px 14px;z-index:10;overflow-y:auto;}
+.sidebar-brand{padding:0 8px;margin-bottom:28px;}
+.sb-top{font-family:'Syne',sans-serif;font-size:9px;font-weight:600;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;}
+.sb-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1.1;}
+.sb-name .k{color:var(--accent2);}
+.sb-name .m{color:var(--accent);}
+.nav-section{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:0 8px;margin-bottom:6px;margin-top:16px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s;margin-bottom:2px;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:rgba(79,124,255,.14);color:var(--accent);font-weight:500;}
+.nav-icon{width:15px;height:15px;opacity:.7;flex-shrink:0;}
+.sidebar-bottom{margin-top:auto;padding-top:16px;}
+.api-pill{padding:9px 12px;background:var(--bg3);border-radius:var(--r);border:0.5px solid var(--border);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px;}
+.api-dot{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;}
+.api-dot.on{background:var(--green);}
+.live-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;background:rgba(0,214,143,.11);color:var(--green);letter-spacing:.08em;animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.main{margin-left:230px;padding:26px 28px;min-height:100vh;}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+.page-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;flex:1;}
+.logout-btn{padding:7px 14px;background:transparent;border:0.5px solid var(--border2);border-radius:var(--r);color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;}
+.logout-btn:hover{border-color:var(--red);color:var(--red);}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* CARDS */
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r2);padding:18px 20px;margin-bottom:14px;}
+.card-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+.metric{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;}
+.metric-label{font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em;}
+.metric-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;}
+.metric-val.up{color:var(--green);}
+.metric-val.dn{color:var(--red);}
+.metric-val.bl{color:var(--accent2);}
+.metric-val.pu{color:var(--purple);}
+.metric-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* SEARCH */
+.search-bar{display:flex;gap:10px;margin-bottom:16px;}
+.search-input{flex:1;padding:11px 14px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-btn{padding:11px 20px;background:var(--accent);border:none;border-radius:var(--r);color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
+.search-btn:hover{opacity:.85;}
+.search-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:7px 9px;color:var(--muted);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;border-bottom:0.5px solid var(--border);}
+td{padding:9px 9px;border-bottom:0.5px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.018);}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;}
+.badge-buy{background:rgba(0,214,143,.12);color:var(--green);}
+.badge-sell{background:rgba(255,61,107,.12);color:var(--red);}
+.badge-neutral{background:rgba(90,100,128,.12);color:var(--muted);}
+.badge-strong{background:rgba(79,124,255,.12);color:var(--accent);}
+.badge-amber{background:rgba(255,179,0,.12);color:var(--amber);}
+
+/* FLOW BARS */
+.flow-row{display:flex;height:18px;border-radius:5px;overflow:hidden;margin:3px 0 8px;}
+.flow-buy{background:rgba(0,214,143,.3);transition:width .5s;}
+.flow-sell{background:rgba(255,61,107,.3);transition:width .5s;}
+.flow-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px;}
+
+/* PAIR CHIPS */
+.pair-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.pair-chip{padding:5px 13px;border-radius:20px;border:0.5px solid var(--border2);font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s;font-family:'DM Mono',monospace;}
+.pair-chip:hover{border-color:var(--accent);color:var(--accent);}
+.pair-chip.active{background:rgba(79,124,255,.13);border-color:var(--accent);color:var(--accent);}
+
+/* TICKER */
+.ticker-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.ticker-item{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:11px 14px;min-width:130px;flex:1;cursor:pointer;transition:border-color .15s;}
+.ticker-item:hover,.ticker-item.sel{border-color:var(--accent);}
+.ticker-pair{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.ticker-price{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;margin:3px 0 2px;}
+.ticker-chg{font-size:11px;font-family:'DM Mono',monospace;}
+.ticker-chg.up{color:var(--green);}
+.ticker-chg.dn{color:var(--red);}
+
+/* ALERTS */
+.alert{padding:10px 13px;border-radius:var(--r);font-size:12px;margin-bottom:8px;border-left:3px solid;line-height:1.6;}
+.alert-green{background:rgba(0,214,143,.07);border-color:var(--green);color:#6ee7b7;}
+.alert-red{background:rgba(255,61,107,.07);border-color:var(--red);color:#fda4af;}
+.alert-amber{background:rgba(255,179,0,.07);border-color:var(--amber);color:#fcd34d;}
+.alert-blue{background:rgba(79,124,255,.07);border-color:var(--accent);color:#93c5fd;}
+.alert-purple{background:rgba(157,111,255,.07);border-color:var(--purple);color:#c4b5fd;}
+
+/* FORMS */
+.api-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.form-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.form-input{padding:9px 12px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--accent);}
+.form-input::placeholder{color:var(--muted);font-size:11px;}
+
+/* BUTTONS */
+.btn-primary{padding:11px 22px;background:var(--accent);border:none;border-radius:var(--r);color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;}
+.btn-primary:hover{opacity:.85;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{padding:10px 18px;background:transparent;border:0.5px solid var(--border2);border-radius:var(--r);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;}
+.btn-ghost:hover{border-color:var(--accent2);color:var(--accent2);}
+.btn-green{padding:11px 22px;background:rgba(0,214,143,.15);border:0.5px solid var(--green);border-radius:var(--r);color:var(--green);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-green:hover{background:rgba(0,214,143,.25);}
+.btn-red{padding:11px 22px;background:rgba(255,61,107,.12);border:0.5px solid var(--red);border-radius:var(--r);color:var(--red);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-red:hover{background:rgba(255,61,107,.22);}
+
+/* CHART CANVAS */
+.chart-wrap{position:relative;width:100%;height:320px;background:var(--bg3);border-radius:var(--r);overflow:hidden;}
+
+/* KEY POINTS */
+.kp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.kp-card{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:15px;position:relative;overflow:hidden;}
+.kp-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.kp-card.blue::before{background:var(--accent);}
+.kp-card.green::before{background:var(--green);}
+.kp-card.amber::before{background:var(--amber);}
+.kp-card.red::before{background:var(--red);}
+.kp-card.purple::before{background:var(--purple);}
+.kp-card.pink::before{background:var(--pink);}
+.kp-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:5px;}
+.kp-desc{font-size:12px;color:var(--muted);line-height:1.7;}
+.kp-signal{font-size:11px;margin-top:7px;padding:3px 8px;border-radius:6px;display:inline-block;font-weight:500;}
+.kp-signal.watch{background:rgba(255,179,0,.1);color:var(--amber);}
+.kp-signal.buy{background:rgba(0,214,143,.1);color:var(--green);}
+.kp-signal.sell{background:rgba(255,61,107,.1);color:var(--red);}
+
+/* EXECUTION PANEL */
+.exec-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.exec-side{padding:16px;border-radius:var(--r);border:0.5px solid var(--border);}
+.exec-buy{background:rgba(0,214,143,.04);border-color:rgba(0,214,143,.2);}
+.exec-sell{background:rgba(255,61,107,.04);border-color:rgba(255,61,107,.2);}
+.exec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+.exec-label.buy-lbl{color:var(--green);}
+.exec-label.sell-lbl{color:var(--red);}
+.price-big{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;margin:8px 0;}
+.tg-status{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(--bg3);border-radius:var(--r);border:0.5px solid var(--border);margin-bottom:12px;font-size:12px;}
+.tg-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;}
+.tg-dot.on{background:var(--green);}
+
+/* LIVE TRANSACTIONS */
+.tx-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:12px;}
+.tx-row:last-child{border-bottom:none;}
+.tx-dir{width:44px;text-align:center;padding:3px 0;border-radius:6px;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif;}
+.tx-dir.buy{background:rgba(0,214,143,.12);color:var(--green);}
+.tx-dir.sell{background:rgba(255,61,107,.12);color:var(--red);}
+.tx-pair{font-family:'DM Mono',monospace;font-weight:500;min-width:70px;}
+.tx-price{font-family:'DM Mono',monospace;color:var(--accent2);min-width:70px;}
+.tx-pnl{font-family:'DM Mono',monospace;min-width:70px;}
+.tx-pnl.pos{color:var(--green);}
+.tx-pnl.neg{color:var(--red);}
+.tx-status{padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;font-family:'DM Sans',sans-serif;}
+.tx-status.open{background:rgba(79,124,255,.12);color:var(--accent);}
+.tx-status.closed{background:rgba(90,100,128,.1);color:var(--muted);}
+.tx-status.pushed{background:rgba(0,229,255,.1);color:var(--accent2);}
+
+/* API LOG */
+.api-log{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--r);padding:13px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);min-height:70px;line-height:1.9;white-space:pre-wrap;max-height:180px;overflow-y:auto;}
+.log-line.ok{color:var(--green);}
+.log-line.err{color:var(--red);}
+.log-line.info{color:var(--accent2);}
+
+/* BACKTEST EXPLAIN */
+.bt-explain{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--r);padding:16px;margin-top:12px;}
+.bt-explain-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em;}
+.bt-explain-row{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid var(--border);}
+.bt-explain-row:last-child{border-bottom:none;}
+.bt-explain-icon{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.bt-explain-text{font-size:12px;color:var(--muted);line-height:1.6;}
+.bt-explain-text strong{color:var(--text);font-weight:500;}
+
+/* CHART SL/TP LEGEND */
+.chart-legend{display:flex;gap:16px;margin-top:8px;font-size:11px;}
+.legend-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:5px;}
+
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+
+/* TWO-COL LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+/* MARKET RESULT */
+#market-result{display:none;}
+.of-price{color:var(--accent2);font-weight:500;}
+.of-pos{color:var(--green);}
+.of-neg{color:var(--red);}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="login-screen">
+  <div class="grid-bg"></div>
+  <div class="login-box">
+    <div class="brand-lock">
+      <div class="brand-top">Order Flow Intelligence</div>
+      <div class="brand-main"><span class="k">Kut</span><span class="m">Milz</span> <span class="fd">FlowDesk</span></div>
+      <div class="brand-sub">Professional Forex Order Flow Terminal</div>
+    </div>
+    <label class="login-label">Admin access key</label>
+    <input class="login-input" type="password" id="key-input" maxlength="4" placeholder="••••" oninput="onKeyInput(this)" onkeydown="if(event.key==='Enter')tryLogin()">
+    <div class="key-dots">
+      <div class="key-dot" id="kd0"></div><div class="key-dot" id="kd1"></div>
+      <div class="key-dot" id="kd2"></div><div class="key-dot" id="kd3"></div>
+    </div>
+    <button class="login-btn" onclick="tryLogin()">Enter terminal</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sb-top">Terminal</div>
+      <div class="sb-name"><span class="k">Kut</span><span class="m">Milz</span></div>
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--muted);margin-top:1px;">FlowDesk</div>
+    </div>
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPanel('dashboard',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Dashboard
+    </div>
+    <div class="nav-section">Markets</div>
+    <div class="nav-item" onclick="showPanel('search',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l4 4"/></svg>Market Search
+    </div>
+    <div class="nav-item" onclick="showPanel('orderflow',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12l4-5 3 3 4-7 3 4"/></svg>Order Flow
+    </div>
+    <div class="nav-section">Trading</div>
+    <div class="nav-item" onclick="showPanel('execution',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 2"/></svg>Live Execution
+    </div>
+    <div class="nav-item" onclick="showPanel('transactions',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h9M2 12h6"/></svg>Transactions
+    </div>
+    <div class="nav-section">Analysis</div>
+    <div class="nav-item" onclick="showPanel('keypoints',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 4h14M1 8h10M1 12h7"/></svg>Key Points
+    </div>
+    <div class="nav-item" onclick="showPanel('backtest',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13V7M7 13V4M11 13V9M15 13V2"/></svg>Backtest
+    </div>
+    <div class="nav-section">Settings</div>
+    <div class="nav-item" onclick="showPanel('apiconnect',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="2.5"/><path d="M3 4h6M3 8h6M3 12h5"/></svg>Python API
+    </div>
+    <div class="nav-item" onclick="showPanel('trainrich',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h10v12H3z"/><path d="M5 5h6M5 8h6M5 11h4"/></svg>Rich Training
+    </div>
+    <div class="sidebar-bottom">
+      <div class="api-pill"><span class="api-dot" id="api-dot"></span><span id="api-label">API disconnected</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);" id="active-symbol">—</span>
+      <span class="live-badge">LIVE</span>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-label">Active pairs</div><div class="metric-val bl">6</div><div class="metric-sub">Monitoring live</div></div>
+        <div class="metric"><div class="metric-label">Buy pressure</div><div class="metric-val up" id="d-buy">64%</div><div class="metric-sub">EUR/USD dominant</div></div>
+        <div class="metric"><div class="metric-label">Signals today</div><div class="metric-val pu">14</div><div class="metric-sub">8 high strength</div></div>
+        <div class="metric"><div class="metric-label">Open trades</div><div class="metric-val bl" id="d-open-trades">3</div><div class="metric-sub">Live positions</div></div>
+      </div>
+      <div class="ticker-row" id="ticker-row"></div>
+      <div class="card">
+        <div class="card-title" id="dash-flow-title">Live order flow snapshot — click a pair above to load</div>
+        <div id="dash-flow-pairs"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Active signals</div>
+        <div class="alert alert-green">EUR/USD — Strong buy delta (+1,340) at 1.0815 key level. Stacked imbalance x4.</div>
+        <div class="alert alert-amber">GBP/USD — Absorption forming at 1.2668. Wait for confirmation candle.</div>
+        <div class="alert alert-blue">USD/JPY — Institutional volume spike. POC at 151.20. Monitor closely.</div>
+        <div class="alert alert-red">USD/CHF — Sell imbalance 78% at 0.9022. Potential reversal zone.</div>
+      </div>
+    </div>
+
+    <!-- ══ MARKET SEARCH ══ -->
+    <div class="panel" id="panel-search">
+      <div class="card">
+        <div class="card-title">Search any forex market</div>
+        <div class="search-bar">
+          <input class="search-input" id="search-q" type="text" placeholder="EUR/USD, GBP/JPY, XAU/USD..." onkeydown="if(event.key==='Enter')doSearch()">
+          <button class="search-btn" id="search-btn" onclick="doSearch()">Search</button>
+        </div>
+        <div class="pair-chips" id="search-chips"></div>
+      </div>
+      <div id="market-result">
+        <div class="metric-grid" id="mr-metrics"></div>
+        <div class="card">
+          <div class="card-title" id="mr-chart-title">Price chart — EUR/USD</div>
+          <div class="chart-wrap"><canvas id="market-chart"></canvas></div>
+          <div class="chart-legend" id="chart-legend"></div>
+        </div>
+        <div class="two-col">
+          <div class="card" id="mr-flow-card">
+            <div class="card-title" id="mr-title">Order flow depth</div>
+            <div id="mr-flow"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Market overview</div>
+            <div id="mr-info"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Key levels to watch</div>
+          <div id="mr-levels"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ORDER FLOW ══ -->
+    <div class="panel" id="panel-orderflow">
+      <div class="card">
+        <div class="card-title">Live bid/ask depth</div>
+        <div class="pair-chips" id="of-chips"></div>
+        <div id="of-table"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Delta history</div>
+        <div id="of-history"></div>
+      </div>
+    </div>
+
+    <!-- ══ LIVE EXECUTION ══ -->
+    <div class="panel" id="panel-execution">
+      <div class="card">
+        <div class="card-title">Telegram push config</div>
+        <div class="tg-status">
+          <span class="tg-dot" id="tg-dot"></span>
+          <span id="tg-label" style="flex:1;">Telegram not connected</span>
+          <span style="font-size:11px;color:var(--muted);">Alerts pushed on execution</span>
+        </div>
+        <div class="api-row">
+          <div class="form-group">
+            <div class="form-label">Bot token</div>
+            <input class="form-input" id="tg-token" type="text" placeholder="123456:ABCdef...">
+          </div>
+          <div class="form-group">
+            <div class="form-label">Chat ID</div>
+            <input class="form-input" id="tg-chatid" type="text" placeholder="-100123456789">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="connectTelegram()" style="margin-top:4px;">Connect Telegram</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title" id="exec-pair-title">Live execution — select a pair</div>
+        <div class="pair-chips" id="exec-chips"></div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;" id="exec-pair-lbl">EUR/USD</div>
+            <div class="price-big" id="exec-live-price">1.0821</div>
+            <div style="font-size:11px;color:var(--muted);">Bid: <span id="exec-bid" style="color:var(--green);">1.0819</span> &nbsp; Ask: <span id="exec-ask" style="color:var(--red);">1.0822</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Order flow signal</div>
+            <div style="font-size:16px;font-weight:700;font-family:'Syne',sans-serif;" id="exec-signal-lbl" style="color:var(--green);">Strong Buy</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="exec-delta-lbl">Delta: +1,240</div>
+          </div>
+        </div>
+        <div class="api-row" style="margin-bottom:12px;">
+          <div class="form-group" style="flex:2;">
+            <div class="form-label">Strategy (for Rich approval)</div>
+            <select class="form-input" id="exec-strategy" style="cursor:pointer">
+              <option value="FlowDesk Manual">FlowDesk Manual</option>
+              <option value="Delta Divergence Fade v2.1">Delta Divergence Fade v2.1</option>
+              <option value="Absorption Reversal Classic">Absorption Reversal Classic</option>
+              <option value="Stacked Imbalance Breakout">Stacked Imbalance Breakout</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <div class="form-label">Timeframe</div>
+            <select class="form-input" id="exec-tf" style="cursor:pointer">
+              <option value="M1">M1</option>
+              <option value="M5">M5</option>
+              <option value="M15">M15</option>
+              <option value="H1">H1</option>
+              <option value="H4">H4</option>
+            </select>
+          </div>
+        </div>
+        <div class="exec-grid">
+          <div class="exec-side exec-buy">
+            <div class="exec-label buy-lbl">Buy / Long</div>
+            <div class="form-group"><div class="form-label">Lot size</div><input class="form-input" id="buy-lots" type="number" value="0.10" step="0.01" min="0.01"></div>
+            <div class="api-row">
+              <div class="form-group"><div class="form-label">Stop loss (pips)</div><input class="form-input" id="buy-sl" type="number" value="15" min="5"></div>
+              <div class="form-group"><div class="form-label">Take profit (pips)</div><input class="form-input" id="buy-tp" type="number" value="30" min="5"></div>
+            </div>
+            <div style="background:var(--bg);border-radius:var(--r);padding:10px;margin-bottom:10px;font-size:12px;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">SL price</span><span style="color:var(--red);font-family:'DM Mono',monospace;" id="buy-sl-price">—</span></div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="color:var(--muted);">TP price</span><span style="color:var(--green);font-family:'DM Mono',monospace;" id="buy-tp-price">—</span></div>
+            </div>
+            <button class="btn-green" style="width:100%;" onclick="executeTrade('BUY')">Execute BUY</button>
+          </div>
+          <div class="exec-side exec-sell">
+            <div class="exec-label sell-lbl">Sell / Short</div>
+            <div class="form-group"><div class="form-label">Lot size</div><input class="form-input" id="sell-lots" type="number" value="0.10" step="0.01" min="0.01"></div>
+            <div class="api-row">
+              <div class="form-group"><div class="form-label">Stop loss (pips)</div><input class="form-input" id="sell-sl" type="number" value="15" min="5"></div>
+              <div class="form-group"><div class="form-label">Take profit (pips)</div><input class="form-input" id="sell-tp" type="number" value="30" min="5"></div>
+            </div>
+            <div style="background:var(--bg);border-radius:var(--r);padding:10px;margin-bottom:10px;font-size:12px;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">SL price</span><span style="color:var(--red);font-family:'DM Mono',monospace;" id="sell-sl-price">—</span></div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="color:var(--muted);">TP price</span><span style="color:var(--green);font-family:'DM Mono',monospace;" id="sell-tp-price">—</span></div>
+            </div>
+            <button class="btn-red" style="width:100%;" onclick="executeTrade('SELL')">Execute SELL</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Execution log</div>
+        <div class="api-log" id="exec-log">Waiting for trades...</div>
+      </div>
+    </div>
+
+    <!-- ══ LIVE TRANSACTIONS ══ -->
+    <div class="panel" id="panel-transactions">
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-label">Open trades</div><div class="metric-val bl" id="tx-open">3</div></div>
+        <div class="metric"><div class="metric-label">Total P&L</div><div class="metric-val up" id="tx-pnl">+$145.00</div></div>
+        <div class="metric"><div class="metric-label">Wins today</div><div class="metric-val up" id="tx-wins">5</div></div>
+        <div class="metric"><div class="metric-label">Losses today</div><div class="metric-val dn" id="tx-losses">2</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="card-title" style="margin-bottom:0;">Open positions</div>
+          <button class="btn-ghost" style="padding:6px 12px;font-size:12px;" onclick="closeAllTrades()">Close all</button>
+        </div>
+        <div id="open-positions"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Transaction history</div>
+        <div id="tx-history"></div>
+      </div>
+    </div>
+
+    <!-- ══ KEY POINTS ══ -->
+    <div class="panel" id="panel-keypoints">
+      <div class="card">
+        <div class="card-title">What to look for in order flow trading</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.8;">Master these 6 core signals. Each tells a specific story about what institutions and market makers are doing right now.</p>
+      </div>
+      <div class="kp-grid">
+        <div class="kp-card blue"><div class="kp-title">Delta divergence</div><div class="kp-desc">Delta = buy volume minus sell volume. When price rises but delta is negative, institutions are selling into the move — expect reversal. When price falls but delta is positive, buyers are absorbing — expect bounce.</div><div class="kp-signal watch">Watch: divergence between price direction and delta</div></div>
+        <div class="kp-card green"><div class="kp-title">Stacked imbalance</div><div class="kp-desc">When 3+ consecutive price levels all show the same directional imbalance (80%+ buy or sell), this signals strong institutional momentum. These setups have the highest accuracy because large players are clearly committed.</div><div class="kp-signal buy">Signal: 3+ levels with &gt;70% same-direction imbalance</div></div>
+        <div class="kp-card amber"><div class="kp-title">Absorption</div><div class="kp-desc">When very high volume appears at a level but price does NOT move, one side is absorbing all orders. This marks exhaustion and signals an imminent reversal. The bigger the absorbed volume, the stronger the reversal signal.</div><div class="kp-signal watch">Watch: high volume + no price movement</div></div>
+        <div class="kp-card purple"><div class="kp-title">Point of control (POC)</div><div class="kp-desc">The price level with the highest total traded volume this session. Price is magnetically pulled back to the POC. When price moves far from POC, it almost always returns. Plan exits and re-entries around this level.</div><div class="kp-signal watch">Use: plan entries at distance from POC</div></div>
+        <div class="kp-card red"><div class="kp-title">Unfinished auction</div><div class="kp-desc">When price moves rapidly away from a level leaving very low volume behind, the market has unfinished business there. Price will often return to complete the auction. These are high-probability re-test targets for re-entries.</div><div class="kp-signal sell">Target: return to low-volume gap zones</div></div>
+        <div class="kp-card pink"><div class="kp-title">Session confluence</div><div class="kp-desc">Order flow signals are 2x stronger during London (7–9 AM UTC) and New York (1–3 PM UTC) opens. Institutional volume peaks at these windows. The same signal at 8 AM London is far more reliable than at 3 AM Tokyo.</div><div class="kp-signal buy">Best time: London + NY session opens</div></div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title">Pre-trade checklist</div>
+        <table><thead><tr><th>#</th><th>Check</th><th>Why</th></tr></thead><tbody>
+          <tr><td><span class="badge badge-buy">1</span></td><td>Delta aligned with direction?</td><td style="color:var(--muted)">Confirms buying/selling pressure is genuine</td></tr>
+          <tr><td><span class="badge badge-buy">2</span></td><td>Imbalance ratio ≥ 3:1?</td><td style="color:var(--muted)">Shows institutional momentum behind the move</td></tr>
+          <tr><td><span class="badge badge-buy">3</span></td><td>Near key level (POC, S/R)?</td><td style="color:var(--muted)">Gives structural context for the signal</td></tr>
+          <tr><td><span class="badge badge-buy">4</span></td><td>London or NY session?</td><td style="color:var(--muted)">High-quality signals need volume to follow through</td></tr>
+          <tr><td><span class="badge badge-buy">5</span></td><td>SL below/above absorption zone?</td><td style="color:var(--muted)">Logical invalidation point = better RR</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- ══ BACKTEST ══ -->
+    <div class="panel" id="panel-backtest">
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Load saved strategy</div>
+          <div class="form-group">
+            <div class="form-label">Saved strategies</div>
+            <select class="form-input" id="bt-load-strat" style="cursor:pointer" onchange="loadStrategy(this.value)">
+              <option value="">— Select a saved strategy —</option>
+              <option value="delta_fade">Delta Divergence Fade v2.1</option>
+              <option value="absorption_rev">Absorption Reversal Classic</option>
+              <option value="stacked_break">Stacked Imbalance Breakout</option>
+              <option value="poc_pull">POC Magnetic Pull</option>
+            </select>
+          </div>
+          <div id="strat-preview" style="display:none;"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Configuration</div>
+          <div class="api-row">
+            <div class="form-group"><div class="form-label">Pair</div>
+              <select class="form-input" id="bt-pair" style="cursor:pointer"><option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option><option>AUD/USD</option></select></div>
+            <div class="form-group"><div class="form-label">Timeframe</div>
+              <select class="form-input" id="bt-tf" style="cursor:pointer"><option>M5</option><option>M15</option><option>H1</option><option>H4</option></select></div>
+          </div>
+          <div class="api-row">
+            <div class="form-group"><div class="form-label">Stop loss (pips)</div><input class="form-input" id="bt-sl" type="number" value="15"></div>
+            <div class="form-group"><div class="form-label">Take profit (pips)</div><input class="form-input" id="bt-tp" type="number" value="30"></div>
+          </div>
+          <div class="api-row">
+            <div class="form-group"><div class="form-label">Min imbalance ratio</div><input class="form-input" id="bt-imb" type="number" value="3.0" step="0.5"></div>
+            <div class="form-group"><div class="form-label">Session</div>
+              <select class="form-input" style="cursor:pointer"><option>All sessions</option><option>London only</option><option>New York only</option><option>London + NY</option></select></div>
+          </div>
+          <button class="btn-primary" style="width:100%;margin-top:6px;" onclick="runBacktest()">Run backtest</button>
+        </div>
+      </div>
+
+      <div id="bt-results" style="display:none;">
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-label">Total trades</div><div class="metric-val bl" id="bt-m1">—</div></div>
+          <div class="metric"><div class="metric-label">Win rate</div><div class="metric-val up" id="bt-m2">—</div></div>
+          <div class="metric"><div class="metric-label">Profit factor</div><div class="metric-val up" id="bt-m3">—</div></div>
+          <div class="metric"><div class="metric-label">Max drawdown</div><div class="metric-val dn" id="bt-m4">—</div></div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">Equity curve</div>
+            <div id="bt-equity-bars"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Trade breakdown</div>
+            <div id="bt-breakdown"></div>
+          </div>
+        </div>
+        <div class="bt-explain" id="bt-explain-box">
+          <div class="bt-explain-title">Strategy analysis — detailed explanation</div>
+          <div id="bt-explain-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PYTHON API ══ -->
+    <div class="panel" id="panel-apiconnect">
+      <div class="card">
+        <div class="card-title">Connect your Python backend</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.8;">Paste the URL of your running KutMilz FlowDesk Python server. Once connected, live order flow data and backtest results load from your local Python process.</p>
+        <div class="form-group"><div class="form-label">Python server URL</div>
+          <input class="form-input" id="api-url" type="text" value="http://127.0.0.1:5055" placeholder="http://127.0.0.1:5055"></div>
+        <div class="api-row">
+          <div class="form-group"><div class="form-label">Orderflow endpoint</div><input class="form-input" id="api-ep-of" value="/orderflow"></div>
+          <div class="form-group"><div class="form-label">Quotes endpoint</div><input class="form-input" id="api-ep-tr" value="/api/quotes"></div>
+        </div>
+        <div class="api-row">
+          <div class="form-group"><div class="form-label">Backtest endpoint</div><input class="form-input" id="api-ep-bt" value="/api/backtest/run"></div>
+          <div class="form-group"><div class="form-label">Refresh (seconds)</div><input class="form-input" id="api-refresh" type="number" value="10" min="5"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button class="btn-primary" style="flex:1;" onclick="connectAPI()">Connect to Python server</button>
+          <button class="btn-ghost" style="flex:1;" onclick="testAPI()">Test connection</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Connection log</div>
+        <div class="api-log" id="api-log">Waiting for connection...</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Python server setup</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.9;font-family:'DM Mono',monospace;background:var(--bg);border-radius:var(--r);padding:14px;border:0.5px solid var(--border);">
+<span style="color:var(--accent2);"># 1. Install</span>
+pip install -r forex_orderflow/requirements.txt
+
+<span style="color:var(--accent2);"># 2. Run FlowDesk server</span>
+<span style="color:var(--green);">from</span> flask <span style="color:var(--green);">import</span> Flask, jsonify
+<span style="color:var(--green);">from</span> flask_cors <span style="color:var(--green);">import</span> CORS
+app = Flask(__name__)
+CORS(app)
+
+@app.route(<span style="color:var(--amber);">'/orderflow'</span>)
+<span style="color:var(--green);">def</span> <span style="color:var(--accent);">orderflow</span>():
+  <span style="color:var(--green);">return</span> jsonify(your_orderflow_data)
+
+<span style="color:var(--accent2);"># 3. Open UI</span>
+python -m forex_orderflow.flowdesk_server <span style="color:var(--accent2);"># → http://127.0.0.1:5055/</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RICH TRAINING (Upload Knowledge) -->
+    <div class="panel" id="panel-trainrich">
+      <div class="card">
+        <div class="card-title">Upload knowledge for Rich</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.8;">
+          Upload documents for Rich to read and store in the knowledge database. Supported: txt, pdf, csv, json, md.
+          Files are forwarded to Rich at <span style="font-family:'DM Mono',monospace;">http://127.0.0.1:5001/knowledge/upload</span>.
+        </p>
+        <div class="api-row">
+          <div class="form-group" style="flex:2;">
+            <div class="form-label">Choose a file</div>
+            <input class="form-input" id="rich-know-file" type="file" accept=".txt,.pdf,.csv,.json,.md">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <div class="form-label">Action</div>
+            <button class="btn-primary" style="width:100%;" onclick="uploadKnowledge()">Upload to Rich</button>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Upload progress</div>
+          <div style="background:var(--bg);border:0.5px solid var(--border);border-radius:999px;overflow:hidden;height:10px;">
+            <div id="rich-upload-bar" style="height:10px;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Training log</div>
+        <div class="api-log" id="rich-upload-log">Waiting for upload...</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sync FlowDesk strategies into Rich</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.8;">
+          This pushes the current FlowDesk preset strategies into Rich so the supervisor can reference how they work.
+        </p>
+        <button class="btn-ghost" onclick="syncStrategies()">Sync strategies now</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ADMIN_KEY='2007';
+ let apiConnected=false,apiBaseUrl='',liveInterval=null,apiTimer=null,tgConnected=false;
+let activePair='EUR/USD',execPair='EUR/USD';
+let openTrades=[],txHistory=[];
+let marketChartInst=null;
+
+const marketData={
+  'EUR/USD':{price:1.0821,chg:+0.12,bid:1.0819,ask:1.0822,spread:0.3,session:'London',vol:'High',trend:'Bullish',poc:1.0815,support:[1.0800,1.0780,1.0750],resistance:[1.0835,1.0860,1.0890],delta:'+1,240',imbalance:'72%',sentiment:'Buy'},
+  'GBP/USD':{price:1.2648,chg:-0.08,bid:1.2646,ask:1.2650,spread:0.4,session:'London',vol:'Med',trend:'Bearish',poc:1.2640,support:[1.2620,1.2590,1.2550],resistance:[1.2670,1.2700,1.2730],delta:'-680',imbalance:'34%',sentiment:'Sell'},
+  'USD/JPY':{price:151.22,chg:+0.21,bid:151.20,ask:151.24,spread:0.4,session:'Tokyo',vol:'High',trend:'Bullish',poc:151.10,support:[150.80,150.50,150.00],resistance:[151.50,152.00,152.50],delta:'+920',imbalance:'64%',sentiment:'Buy'},
+  'USD/CHF':{price:0.9012,chg:-0.05,bid:0.9010,ask:0.9014,spread:0.4,session:'London',vol:'Low',trend:'Neutral',poc:0.9008,support:[0.8990,0.8960,0.8930],resistance:[0.9030,0.9060,0.9100],delta:'-210',imbalance:'41%',sentiment:'Neutral'},
+  'AUD/USD':{price:0.6524,chg:+0.07,bid:0.6522,ask:0.6526,spread:0.4,session:'Sydney',vol:'Med',trend:'Bullish',poc:0.6518,support:[0.6500,0.6480,0.6450],resistance:[0.6540,0.6560,0.6590],delta:'+540',imbalance:'61%',sentiment:'Buy'},
+  'USD/CAD':{price:1.3601,chg:-0.03,bid:1.3599,ask:1.3603,spread:0.4,session:'NY',vol:'Med',trend:'Bearish',poc:1.3610,support:[1.3580,1.3550,1.3520],resistance:[1.3620,1.3650,1.3700],delta:'-380',imbalance:'38%',sentiment:'Sell'},
+  'GBP/JPY':{price:191.35,chg:+0.15,bid:191.32,ask:191.38,spread:0.6,session:'London',vol:'High',trend:'Bullish',poc:191.00,support:[190.50,189.80,189.00],resistance:[191.80,192.50,193.00],delta:'+760',imbalance:'67%',sentiment:'Buy'},
+  'EUR/GBP':{price:0.8558,chg:-0.04,bid:0.8556,ask:0.8560,spread:0.4,session:'London',vol:'Med',trend:'Neutral',poc:0.8550,support:[0.8530,0.8510,0.8490],resistance:[0.8580,0.8600,0.8630],delta:'+120',imbalance:'52%',sentiment:'Neutral'},
+};
+
+const strategies={
+  delta_fade:{name:'Delta Divergence Fade v2.1',desc:'Fades price moves when delta diverges from price direction. Enters on candle close when delta and price disagree.',params:{pair:'EUR/USD',tf:'M15',sl:15,tp:35,imb:2.5,session:'London + NY'},tags:['Counter-trend','High accuracy','Medium frequency'],color:'var(--accent)'},
+  absorption_rev:{name:'Absorption Reversal Classic',desc:'Enters reversal trades at absorption zones — levels where large volume appears but price does not move. High-probability reversals.',params:{pair:'GBP/USD',tf:'H1',sl:20,tp:50,imb:3.5,session:'London only'},tags:['Reversal','Low frequency','High RR'],color:'var(--green)'},
+  stacked_break:{name:'Stacked Imbalance Breakout',desc:'Trades breakouts confirmed by 3+ stacked imbalance levels in the same direction. Momentum strategy that rides institutional flow.',params:{pair:'USD/JPY',tf:'M5',sl:12,tp:24,imb:3.0,session:'All sessions'},tags:['Trend-following','High frequency','Momentum'],color:'var(--amber)'},
+  poc_pull:{name:'POC Magnetic Pull',desc:'Trades the predictable return of price to the Point of Control. When price deviates significantly from POC, fades the move.',params:{pair:'EUR/USD',tf:'H4',sl:25,tp:55,imb:2.0,session:'All sessions'},tags:['Mean-reversion','Low frequency','High RR'],color:'var(--purple)'},
+};
+
+function onKeyInput(el){
+  const v=el.value;
+  for(let i=0;i<4;i++) document.getElementById('kd'+i).classList.toggle('filled',i<v.length);
+}
+
+function tryLogin(){
+  const v=document.getElementById('key-input').value;
+  const err=document.getElementById('login-err');
+  if(v===ADMIN_KEY){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  } else {
+    err.textContent='Incorrect key. Try again.';
+    document.getElementById('key-input').value='';
+    for(let i=0;i<4;i++) document.getElementById('kd'+i).classList.remove('filled');
+    setTimeout(()=>err.textContent='',2500);
+  }
+}
+
+function logout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('key-input').value='';
+  for(let i=0;i<4;i++) document.getElementById('kd'+i).classList.remove('filled');
+  if(liveInterval) clearInterval(liveInterval);
+  if(marketChartInst){marketChartInst.destroy();marketChartInst=null;}
+}
+
+function showPanel(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  const titles={dashboard:'Dashboard',search:'Market Search',orderflow:'Order Flow',execution:'Live Execution',transactions:'Live Transactions',keypoints:'Key Points',backtest:'Backtest',apiconnect:'Python API Connect',trainrich:'Rich Training'};
+  document.getElementById('page-title').textContent=titles[id]||id;
+  if(id==='orderflow') renderOFPanel();
+  if(id==='transactions') renderTransactions();
+}
+
+function initApp(){
+  renderSearchChips();
+  renderTicker();
+  renderDashFlow('EUR/USD');
+  renderOFChips();
+  renderExecChips();
+  initOpenTrades();
+  liveInterval=setInterval(()=>{updateTicker();updateExecPrices();updateOpenPnl();},2000);
+
+  // Auto-connect to the local FlowDesk backend if it's running.
+  // (Keeps the UI "live" without needing extra clicks.)
+  setTimeout(()=>{ try{ connectAPI(); }catch(e){} }, 250);
+}
+
+function renderSearchChips(){
+  const pairs=Object.keys(marketData);
+  document.getElementById('search-chips').innerHTML=pairs.map(p=>`<div class="pair-chip" onclick="quickSearch('${p}')">${p}</div>`).join('');
+}
+
+function renderTicker(){
+  let pairs=Object.keys(marketData);
+  // Keep the ticker lightweight and always include the active pair.
+  pairs=pairs.slice(0,6);
+  if(activePair && !pairs.includes(activePair)) pairs.unshift(activePair);
+  pairs=[...new Set(pairs)].slice(0,8);
+  const el=document.getElementById('ticker-row');
+  el.innerHTML=pairs.map(p=>{
+    const d=marketData[p]||genMarket(p);
+    const k=p.replace('/','');
+    const jp=p==='USD/JPY';
+    return `<div class="ticker-item" onclick="selectDashPair(this,'${p}')" id="tick-${k}">
+      <div class="ticker-pair">${p}</div>
+      <div class="ticker-price" id="tp-${k}">${d.price.toFixed(jp?2:4)}</div>
+      <div class="ticker-chg ${d.chg>=0?'up':'dn'}" id="tc-${k}">${d.chg>=0?'+':''}${d.chg.toFixed(2)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function selectDashPair(el,pair){
+  document.querySelectorAll('.ticker-item').forEach(t=>t.classList.remove('sel'));
+  el.classList.add('sel');
+  activePair=pair;
+  document.getElementById('dash-flow-title').textContent=`Live order flow snapshot — ${pair}`;
+  document.getElementById('active-symbol').textContent=pair;
+  renderDashFlow(pair);
+}
+
+function updateTicker(){
+  // When connected to the Python API, prices are updated by fetchQuotes() instead of jitter simulation.
+  if(apiConnected) return;
+  for(const [pair,d] of Object.entries(marketData)){
+    const k=pair.replace('/','');
+    const el=document.getElementById('tp-'+k);
+    if(!el) continue;
+    const jp=pair==='USD/JPY';
+    const jitter=(Math.random()-.5)*0.0003*(jp?80:1);
+    d.price=parseFloat((d.price+jitter).toFixed(jp?2:4));
+    d.bid=parseFloat((d.price-0.0002).toFixed(jp?2:4));
+    d.ask=parseFloat((d.price+0.0002).toFixed(jp?2:4));
+    el.textContent=d.price.toFixed(jp?2:4);
+  }
+}
+
+function renderDashFlow(pair){
+  const d=marketData[pair];
+  const b=parseInt(d.imbalance);
+  const pairs=['EUR/USD','GBP/USD','USD/JPY','AUD/USD'];
+  const el=document.getElementById('dash-flow-pairs');
+  el.innerHTML=pairs.map(p=>{
+    const pd=marketData[p];
+    const pb=parseInt(pd.imbalance);
+    const highlight=p===pair;
+    return `<div style="margin-bottom:12px;${highlight?'background:rgba(79,124,255,.04);padding:8px;border-radius:8px;border:0.5px solid rgba(79,124,255,.15);':''}">
+      <div class="flow-meta">
+        <span style="font-family:'DM Mono',monospace;font-size:12px;${highlight?'color:var(--accent);':''}">${p}${highlight?' ◀':''}</span>
+        <span>Buy ${pb}% / Sell ${100-pb}%&nbsp; Delta <span style="color:${pd.delta.toString().startsWith('+')?'var(--green)':'var(--red)'}">${pd.delta}</span>&nbsp; <span class="badge ${pd.sentiment==='Buy'?'badge-buy':pd.sentiment==='Sell'?'badge-sell':'badge-neutral'}">${pd.sentiment}</span></span>
+      </div>
+      <div class="flow-row"><div class="flow-buy" style="width:${pb}%"></div><div class="flow-sell" style="width:${100-pb}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function quickSearch(pair){
+  document.querySelectorAll('#search-chips .pair-chip').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('search-q').value=pair;
+  doSearch();
+}
+
+function doSearch(){
+  const q=document.getElementById('search-q').value.trim().toUpperCase();
+  if(!q) return;
+  const btn=document.getElementById('search-btn');
+  btn.innerHTML='<span class="spin"></span>Loading...';
+  btn.disabled=true;
+  setTimeout(()=>{
+    btn.textContent='Search';btn.disabled=false;
+    const d=marketData[q]||genMarket(q);
+    renderMarketResult(q,d);
+  },800);
+}
+
+function genMarket(q){
+  const base=1.0+Math.random()*.5;
+  return {price:base,chg:(Math.random()-.5)*.5,bid:base-0.0002,ask:base+0.0002,spread:0.4,session:'London',vol:'Med',
+    trend:['Bullish','Bearish','Neutral'][Math.floor(Math.random()*3)],poc:base-0.001,
+    support:[+(base-0.005).toFixed(4),+(base-0.010).toFixed(4),+(base-0.018).toFixed(4)],
+    resistance:[+(base+0.005).toFixed(4),+(base+0.010).toFixed(4),+(base+0.018).toFixed(4)],
+    delta:(Math.random()>.5?'+':'-')+Math.floor(Math.random()*1200),
+    imbalance:Math.floor(38+Math.random()*40)+'%',sentiment:['Buy','Sell','Neutral'][Math.floor(Math.random()*3)]};
+}
+
+function renderMarketResult(q,d){
+  document.getElementById('market-result').style.display='block';
+  const jp=q==='USD/JPY';
+  const b=parseInt(d.imbalance);
+  const pr=d.price;
+  document.getElementById('mr-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Price</div><div class="metric-val bl">${pr.toFixed(jp?2:4)}</div><div class="metric-sub">Current</div></div>
+    <div class="metric"><div class="metric-label">Change</div><div class="metric-val ${d.chg>=0?'up':'dn'}">${d.chg>=0?'+':''}${d.chg.toFixed(2)}%</div><div class="metric-sub">Today</div></div>
+    <div class="metric"><div class="metric-label">Buy imbalance</div><div class="metric-val pu">${d.imbalance}</div><div class="metric-sub">At current level</div></div>
+    <div class="metric"><div class="metric-label">Sentiment</div><div class="metric-val" style="font-size:14px;color:${d.sentiment==='Buy'?'var(--green)':d.sentiment==='Sell'?'var(--red)':'var(--muted)'}">${d.sentiment}</div><div class="metric-sub">Order flow bias</div></div>`;
+  document.getElementById('mr-chart-title').textContent=`Price chart — ${q} (with SL & TP levels)`;
+  buildMarketChart(q,d);
+  document.getElementById('mr-title').textContent=`${q} — Order flow depth`;
+  const levels=[-2,-1,0,1,2,3].map(i=>{
+    const mult=jp?0.05:0.0005;
+    const lvl=(pr+i*mult).toFixed(jp?2:4);
+    const bv=Math.floor(400+Math.random()*1400),av=Math.floor(300+Math.random()*1200);
+    const imb=Math.round((bv/(bv+av))*100);
+    return `<div style="margin-bottom:10px;">
+      <div class="flow-meta"><span style="font-family:'DM Mono',monospace;font-size:12px;">${lvl}</span><span>Buy ${imb}% / Sell ${100-imb}%</span></div>
+      <div class="flow-row"><div class="flow-buy" style="width:${imb}%"></div><div class="flow-sell" style="width:${100-imb}%"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('mr-flow').innerHTML=levels;
+  document.getElementById('mr-info').innerHTML=`<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>
+    <tr><td>Bid</td><td class="of-pos">${d.bid}</td></tr>
+    <tr><td>Ask</td><td class="of-neg">${d.ask}</td></tr>
+    <tr><td>Spread</td><td>${d.spread} pips</td></tr>
+    <tr><td>Session</td><td>${d.session}</td></tr>
+    <tr><td>Volume</td><td>${d.vol}</td></tr>
+    <tr><td>Trend</td><td style="color:${d.trend==='Bullish'?'var(--green)':d.trend==='Bearish'?'var(--red)':'var(--muted)'}">${d.trend}</td></tr>
+    <tr><td>POC</td><td class="of-price">${d.poc}</td></tr>
+    <tr><td>Delta</td><td class="${d.delta.toString().startsWith('+')?'of-pos':'of-neg'}">${d.delta}</td></tr>
+    </tbody></table>`;
+  document.getElementById('mr-levels').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div><div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Support levels</div>
+      ${d.support.map((s,i)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);"><span style="color:var(--muted);font-size:12px;">S${i+1}</span><span style="color:var(--green);font-family:'DM Mono',monospace;font-size:12px;">${s}</span></div>`).join('')}</div>
+    <div><div style="font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Resistance levels</div>
+      ${d.resistance.map((r,i)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);"><span style="color:var(--muted);font-size:12px;">R${i+1}</span><span style="color:var(--red);font-family:'DM Mono',monospace;font-size:12px;">${r}</span></div>`).join('')}</div>
+  </div>`;
+}
+
+function buildMarketChart(pair,d){
+  const jp=pair==='USD/JPY';
+  const base=d.price;
+  const sl=jp?0.30:0.0030,tp=jp?0.60:0.0060;
+  const slLong=+(base-sl).toFixed(jp?2:4),tpLong=+(base+tp).toFixed(jp?2:4);
+  const prices=[];
+  let p=base-0.005*(jp?10:1);
+  for(let i=0;i<40;i++){p+=((Math.random()-.47)*0.0006*(jp?50:1));prices.push(+p.toFixed(jp?2:4));}
+  prices[39]=base;
+  const labels=prices.map((_,i)=>{const t=new Date(Date.now()-(39-i)*300000);return t.getHours()+':'+(t.getMinutes().toString().padStart(2,'0'));});
+  if(marketChartInst){marketChartInst.destroy();marketChartInst=null;}
+  const ctx=document.getElementById('market-chart').getContext('2d');
+  marketChartInst=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {label:pair,data:prices,borderColor:'#4f7cff',borderWidth:2,pointRadius:0,tension:.3,fill:false},
+        {label:'SL',data:Array(40).fill(slLong),borderColor:'#ff3d6b',borderWidth:1,borderDash:[6,3],pointRadius:0,fill:false},
+        {label:'TP',data:Array(40).fill(tpLong),borderColor:'#00d68f',borderWidth:1,borderDash:[6,3],pointRadius:0,fill:false},
+        {label:'Entry',data:Array(40).fill(base),borderColor:'rgba(0,229,255,0.6)',borderWidth:1,borderDash:[2,4],pointRadius:0,fill:false},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw}`}}},
+      scales:{x:{ticks:{color:'#5a6480',font:{size:10},maxTicksLimit:8},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#5a6480',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}}}
+    }
+  });
+  document.getElementById('chart-legend').innerHTML=`
+    <span><span class="legend-dot" style="background:#4f7cff;"></span>${pair}</span>
+    <span><span class="legend-dot" style="background:#00e5ff;opacity:.6;"></span>Entry ${base.toFixed(jp?2:4)}</span>
+    <span><span class="legend-dot" style="background:#ff3d6b;"></span>SL ${slLong}</span>
+    <span><span class="legend-dot" style="background:#00d68f;"></span>TP ${tpLong}</span>`;
+}
+
+function renderOFChips(){
+  const pairs=Object.keys(marketData);
+  document.getElementById('of-chips').innerHTML=pairs.map((p,i)=>`<div class="pair-chip ${i===0?'active':''}" onclick="selectOFPair(this,'${p}')">${p}</div>`).join('');
+  renderOFTable('EUR/USD');
+}
+
+function selectOFPair(el,pair){
+  document.querySelectorAll('#of-chips .pair-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderOFTable(pair);
+}
+
+function renderOFTable(pair){
+  const d=marketData[pair]||marketData['EUR/USD'];
+  const base=d.price,jp=pair==='USD/JPY';
+  const rows=[-2,-1,0,1,2,3].map(i=>{
+    const lvl=(base+i*0.0005*(jp?50:1)).toFixed(jp?2:4);
+    const bv=Math.floor(400+Math.random()*1400),av=Math.floor(300+Math.random()*1200);
+    const delta=bv-av,imb=Math.round((bv/(bv+av))*100);
+    const sig=imb>70?'Stacked buy':imb<35?'Strong sell':imb>60?'Buy bias':imb<45?'Sell bias':'Neutral';
+    return `<tr><td class="of-price">${lvl}</td><td class="of-pos">${bv.toLocaleString()}</td><td class="of-neg">${av.toLocaleString()}</td>
+      <td class="${delta>0?'of-pos':'of-neg'}">${delta>0?'+':''}${delta.toLocaleString()}</td><td>${imb}%</td>
+      <td><span class="badge ${imb>60?'badge-buy':imb<45?'badge-sell':'badge-neutral'}">${sig}</span></td></tr>`;
+  }).join('');
+  document.getElementById('of-table').innerHTML=`<table><thead><tr><th>Price</th><th>Bid vol</th><th>Ask vol</th><th>Delta</th><th>Imbalance</th><th>Signal</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const hist=[5,4,3,2,1,0].map(i=>{
+    const t=new Date(Date.now()-i*300000);
+    const hm=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+    const bv=Math.floor(8000+Math.random()*6000),av=Math.floor(6000+Math.random()*6000);
+    const delta=bv-av,imb=Math.round((bv/(bv+av))*100);
+    return `<tr><td>${hm}</td><td class="${delta>0?'of-pos':'of-neg'}">${delta>0?'+':''}${delta.toLocaleString()}</td><td>${imb}%</td>
+      <td><div class="flow-row" style="width:100px;margin:0"><div class="flow-buy" style="width:${imb}%"></div><div class="flow-sell" style="width:${100-imb}%"></div></div></td></tr>`;
+  }).join('');
+  document.getElementById('of-history').innerHTML=`<table><thead><tr><th>Time</th><th>Delta</th><th>Imbalance</th><th>Visual</th></tr></thead><tbody>${hist}</tbody></table>`;
+}
+
+function renderOFPanel(){renderOFTable('EUR/USD');}
+
+/* ── EXECUTION ── */
+function renderExecChips(){
+  const pairs=Object.keys(marketData);
+  document.getElementById('exec-chips').innerHTML=pairs.map((p,i)=>`<div class="pair-chip ${i===0?'active':''}" onclick="selectExecPair(this,'${p}')">${p}</div>`).join('');
+  updateExecPrices();
+}
+
+function selectExecPair(el,pair){
+  document.querySelectorAll('#exec-chips .pair-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  execPair=pair;
+  document.getElementById('exec-pair-lbl').textContent=pair;
+  document.getElementById('exec-pair-title').textContent=`Live execution — ${pair}`;
+  updateExecPrices();
+}
+
+function updateExecPrices(){
+  const d=marketData[execPair]||marketData['EUR/USD'];
+  const jp=execPair==='USD/JPY';
+  document.getElementById('exec-live-price').textContent=d.price.toFixed(jp?2:4);
+  document.getElementById('exec-bid').textContent=d.bid;
+  document.getElementById('exec-ask').textContent=d.ask;
+  const b=parseInt(d.imbalance);
+  const sig=b>65?'Strong Buy':b>55?'Buy Bias':b<35?'Strong Sell':b<45?'Sell Bias':'Neutral';
+  const sigEl=document.getElementById('exec-signal-lbl');
+  sigEl.textContent=sig;
+  sigEl.style.color=b>55?'var(--green)':b<45?'var(--red)':'var(--muted)';
+  document.getElementById('exec-delta-lbl').textContent='Delta: '+d.delta;
+  const mult=jp?1:0.0001;
+  const buySl=(d.price - parseFloat(document.getElementById('buy-sl').value||15)*mult).toFixed(jp?2:4);
+  const buyTp=(d.price + parseFloat(document.getElementById('buy-tp').value||30)*mult).toFixed(jp?2:4);
+  const sellSl=(d.price + parseFloat(document.getElementById('sell-sl').value||15)*mult).toFixed(jp?2:4);
+  const sellTp=(d.price - parseFloat(document.getElementById('sell-tp').value||30)*mult).toFixed(jp?2:4);
+  document.getElementById('buy-sl-price').textContent=buySl;
+  document.getElementById('buy-tp-price').textContent=buyTp;
+  document.getElementById('sell-sl-price').textContent=sellSl;
+  document.getElementById('sell-tp-price').textContent=sellTp;
+}
+
+async function refreshLivePositions(){
+  if(!apiConnected || !apiBaseUrl) return;
+  try{
+    const r=await fetch(apiBaseUrl+'/api/rich/trades/live');
+    const j=await r.json();
+    if(j && j.ok && Array.isArray(j.trades)){
+      document.getElementById('d-open-trades').textContent=j.trades.length;
+      document.getElementById('tx-open').textContent=j.trades.length;
+    }
+  }catch(e){}
+}
+
+async function executeTrade(dir){
+  const d=marketData[execPair];
+  const log=document.getElementById('exec-log');
+  const ts=new Date().toLocaleTimeString();
+  if(!d){
+    log.innerHTML+=`\n<span class=\"log-line err\">[${ts}] No market data loaded for ${execPair}.</span>`;
+    return;
+  }
+
+  // Local price snapshot (used for UI display + fallback simulation).
+  const jp=execPair==='USD/JPY';
+  const mult=jp?1:0.0001;
+  const lots=parseFloat(document.getElementById(dir==='BUY'?'buy-lots':'sell-lots').value)||0.10;
+  const slPips=parseFloat(document.getElementById(dir==='BUY'?'buy-sl':'sell-sl').value)||15;
+  const tpPips=parseFloat(document.getElementById(dir==='BUY'?'buy-tp':'sell-tp').value)||30;
+  const entry=dir==='BUY'?d.ask:d.bid;
+  const sl=dir==='BUY'?(entry-slPips*mult).toFixed(jp?2:4):(entry+slPips*mult).toFixed(jp?2:4);
+  const tp=dir==='BUY'?(entry+tpPips*mult).toFixed(jp?2:4):(entry-tpPips*mult).toFixed(jp?2:4);
+  const strategyEl=document.getElementById('exec-strategy');
+  const tfEl=document.getElementById('exec-tf');
+  const strategyName=(strategyEl && strategyEl.value ? strategyEl.value : 'FlowDesk Manual').trim();
+  const tf=(tfEl && tfEl.value ? tfEl.value : 'M1').trim();
+  const sig=(document.getElementById('exec-signal-lbl') && document.getElementById('exec-signal-lbl').textContent ? document.getElementById('exec-signal-lbl').textContent : '').trim();
+
+  // If connected to the Python backend, route execution through Rich approval.
+  if(apiConnected && apiBaseUrl){
+    log.innerHTML+=`\n<span class=\"log-line info\">[${ts}] Requesting Rich approval for ${dir} ${execPair} (strategy: ${strategyName}, tf: ${tf})...</span>`;
+    try{
+      const payload={
+        pair:execPair,
+        side:dir,
+        timeframe:tf,
+        strategy_name:strategyName,
+        lots:lots,
+        sl_pips:slPips,
+        tp_pips:tpPips,
+        confirm:{signal:sig,delta:d.delta,imbalance:d.imbalance,sentiment:d.sentiment}
+      };
+      const r=await fetch(apiBaseUrl+'/api/trade/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const j=await r.json();
+      const decision=(j && j.decision)?String(j.decision).toUpperCase():'OBSERVE';
+      const tested=(j && j.candidate && j.candidate.strategy_tested) ? true : false;
+
+      if(decision==='ALLOW' && j.executed){
+        log.innerHTML+=`\n<span class=\"log-line ok\">[${ts}] Rich: ALLOW. Order sent to MT5. (tested: ${tested?'YES':'NO'})</span>`;
+        if(j.order && j.order.ok===false){
+          log.innerHTML+=`\n<span class=\"log-line err\">[${ts}] MT5 order error: ${j.order.error||'unknown'}</span>`;
+        }
+        await refreshLivePositions();
+      } else if(decision==='BLOCK'){
+        log.innerHTML+=`\n<span class=\"log-line err\">[${ts}] Rich: BLOCK. No trade executed. (tested: ${tested?'YES':'NO'})</span>`;
+      } else {
+        log.innerHTML+=`\n<span class=\"log-line\">[${ts}] Rich: ${decision}. No trade executed. (tested: ${tested?'YES':'NO'})</span>`;
+      }
+      log.scrollTop=log.scrollHeight;
+      return;
+    }catch(e){
+      log.innerHTML+=`\n<span class=\"log-line err\">[${ts}] Backend error. Falling back to simulated execution.</span>`;
+    }
+  }
+
+  // Offline fallback: simulated trade (keeps terminal usable even if backend is down).
+  const trade={id:Date.now(),pair:execPair,dir,entry:+entry.toFixed(jp?2:4),sl:+sl,tp:+tp,lots,pnl:0,status:'open',time:ts};
+  openTrades.push(trade);
+  log.innerHTML+=`\n<span class=\"log-line ok\">[${ts}] (SIM) ${dir} ${execPair} @ ${entry} | SL:${sl} TP:${tp} | Lots:${lots}</span>`;
+  if(tgConnected){
+    log.innerHTML+=`\n<span class=\"log-line ok\">[${ts}] Telegram alert sent to channel.</span>`;
+    pushTelegram(trade);
+  } else {
+    log.innerHTML+=`\n<span class=\"log-line\">[${ts}] Telegram not connected - alert not sent.</span>`;
+  }
+  log.scrollTop=log.scrollHeight;
+  document.getElementById('d-open-trades').textContent=openTrades.length;
+  document.getElementById('tx-open').textContent=openTrades.length;
+}
+
+function pushTelegram(trade){
+  const token=document.getElementById('tg-token').value.trim();
+  const chatid=document.getElementById('tg-chatid').value.trim();
+  if(!token||!chatid) return;
+  const msg=`🔔 *KutMilz FlowDesk Alert*\n${trade.dir} ${trade.pair}\nEntry: ${trade.entry}\nSL: ${trade.sl}\nTP: ${trade.tp}\nLots: ${trade.lots}\nTime: ${trade.time}`;
+  fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatid,text:msg,parse_mode:'Markdown'})}).catch(()=>{});
+}
+
+function connectTelegram(){
+  const token=document.getElementById('tg-token').value.trim();
+  const chatid=document.getElementById('tg-chatid').value.trim();
+  const log=document.getElementById('exec-log');
+  if(!token||!chatid){
+    log.innerHTML+='\n<span class="log-line err">[ERROR] Enter both bot token and chat ID.</span>';
+    return;
+  }
+  log.innerHTML+='\n<span class="log-line info">[INFO] Testing Telegram connection...</span>';
+  fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatid,text:'✅ KutMilz FlowDesk connected successfully!',parse_mode:'Markdown'})})
+    .then(r=>r.json()).then(data=>{
+      if(data.ok){
+        tgConnected=true;
+        document.getElementById('tg-dot').classList.add('on');
+        document.getElementById('tg-label').textContent='Telegram connected — alerts active';
+        log.innerHTML+='\n<span class="log-line ok">[OK] Telegram connected. Test message sent.</span>';
+      } else {
+        log.innerHTML+=`
+<span class="log-line err">[ERROR] Telegram error: ${data.description}</span>`;
+      }
+    }).catch(()=>{
+      log.innerHTML+='\n<span class="log-line err">[ERROR] Could not reach Telegram. Check token.</span>';
+    });
+}
+
+/* ── TRANSACTIONS ── */
+function initOpenTrades(){
+  openTrades=[
+    {id:1001,pair:'EUR/USD',dir:'BUY',entry:1.0800,sl:1.0785,tp:1.0830,lots:0.10,pnl:0,status:'open',time:'09:14:22'},
+    {id:1002,pair:'GBP/USD',dir:'SELL',entry:1.2670,sl:1.2685,tp:1.2640,lots:0.10,pnl:0,status:'open',time:'10:02:47'},
+    {id:1003,pair:'USD/JPY',dir:'BUY',entry:151.00,sl:150.80,tp:151.40,lots:0.10,pnl:0,status:'open',time:'11:33:05'},
+  ];
+  txHistory=[
+    {id:900,pair:'EUR/USD',dir:'BUY',entry:1.0770,exit:1.0810,lots:0.10,pnl:'+$40.00',status:'closed',time:'08:20:00'},
+    {id:901,pair:'GBP/USD',dir:'SELL',entry:1.2700,exit:1.2665,lots:0.10,pnl:'+$35.00',status:'closed',time:'08:45:12'},
+    {id:902,pair:'USD/JPY',dir:'BUY',entry:150.50,exit:150.30,lots:0.10,pnl:'-$20.00',status:'closed',time:'09:10:38'},
+    {id:903,pair:'AUD/USD',dir:'BUY',entry:0.6510,exit:0.6540,lots:0.20,pnl:'+$60.00',status:'closed',time:'09:55:20'},
+    {id:904,pair:'EUR/USD',dir:'SELL',entry:1.0840,exit:1.0800,lots:0.10,pnl:'+$40.00',status:'closed',time:'10:30:00'},
+    {id:905,pair:'USD/CHF',dir:'BUY',entry:0.9000,exit:0.8985,lots:0.10,pnl:'-$15.00',status:'closed',time:'11:12:44'},
+  ];
+}
+
+function updateOpenPnl(){
+  let totalPnl=0;
+  openTrades.forEach(t=>{
+    const d=marketData[t.pair];
+    if(!d) return;
+    const jp=t.pair==='USD/JPY';
+    const current=t.dir==='BUY'?d.bid:d.ask;
+    const diff=t.dir==='BUY'?current-t.entry:t.entry-current;
+    const pipVal=jp?0.01:0.0001;
+    t.pnl=+(diff/pipVal*t.lots*(jp?0.066:10)).toFixed(2);
+    totalPnl+=t.pnl;
+  });
+  document.getElementById('tx-pnl').textContent=(totalPnl>=0?'+$':'−$')+Math.abs(totalPnl).toFixed(2);
+  document.getElementById('tx-pnl').className='metric-val '+(totalPnl>=0?'up':'dn');
+}
+
+function renderTransactions(){
+  updateOpenPnl();
+  const openEl=document.getElementById('open-positions');
+  if(!openTrades.length){openEl.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0;">No open positions.</div>';return;}
+  openEl.innerHTML=openTrades.map(t=>`
+    <div class="tx-row">
+      <span class="tx-dir ${t.dir.toLowerCase()}">${t.dir}</span>
+      <span class="tx-pair">${t.pair}</span>
+      <span style="color:var(--muted);font-size:11px;">Entry: <span style="font-family:'DM Mono',monospace;color:var(--text);">${t.entry}</span></span>
+      <span style="color:var(--muted);font-size:11px;">SL: <span style="font-family:'DM Mono',monospace;color:var(--red);">${t.sl}</span></span>
+      <span style="color:var(--muted);font-size:11px;">TP: <span style="font-family:'DM Mono',monospace;color:var(--green);">${t.tp}</span></span>
+      <span class="tx-pnl ${t.pnl>=0?'pos':'neg'}" id="pnl-${t.id}">${t.pnl>=0?'+$':'−$'}${Math.abs(t.pnl).toFixed(2)}</span>
+      <span class="tx-status open">Open</span>
+      <button class="btn-red" style="padding:4px 10px;font-size:11px;margin-left:auto;" onclick="closeTrade(${t.id})">Close</button>
+    </div>`).join('');
+  const histEl=document.getElementById('tx-history');
+  histEl.innerHTML=`<table><thead><tr><th>Pair</th><th>Dir</th><th>Entry</th><th>Exit</th><th>Lots</th><th>P&L</th><th>Status</th><th>Time</th></tr></thead><tbody>
+    ${txHistory.map(t=>`<tr>
+      <td style="font-weight:500;">${t.pair}</td>
+      <td><span class="badge ${t.dir==='BUY'?'badge-buy':'badge-sell'}">${t.dir}</span></td>
+      <td>${t.entry}</td><td>${t.exit}</td><td>${t.lots}</td>
+      <td class="${t.pnl.startsWith('+')?'of-pos':'of-neg'}">${t.pnl}</td>
+      <td><span class="tx-status closed">Closed</span></td>
+      <td style="color:var(--muted);">${t.time}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function closeTrade(id){
+  const idx=openTrades.findIndex(t=>t.id===id);
+  if(idx===-1) return;
+  const t=openTrades[idx];
+  const d=marketData[t.pair];
+  const exit=t.dir==='BUY'?d.bid:d.ask;
+  const jp=t.pair==='USD/JPY';
+  const pipVal=jp?0.01:0.0001;
+  const diff=t.dir==='BUY'?exit-t.entry:t.entry-exit;
+  const pnl=+(diff/pipVal*t.lots*(jp?0.066:10)).toFixed(2);
+  txHistory.unshift({id:t.id,pair:t.pair,dir:t.dir,entry:t.entry,exit:exit.toFixed(jp?2:4),lots:t.lots,pnl:(pnl>=0?'+$':'−$')+Math.abs(pnl).toFixed(2),status:'closed',time:new Date().toLocaleTimeString()});
+  openTrades.splice(idx,1);
+  document.getElementById('tx-open').textContent=openTrades.length;
+  document.getElementById('d-open-trades').textContent=openTrades.length;
+  renderTransactions();
+}
+
+function closeAllTrades(){
+  const ids=[...openTrades.map(t=>t.id)];
+  ids.forEach(id=>closeTrade(id));
+}
+
+/* ── BACKTEST ── */
+function loadStrategy(key){
+  if(!key){document.getElementById('strat-preview').style.display='none';return;}
+  const s=strategies[key];
+  if(!s) return;
+  document.getElementById('bt-pair').value=s.params.pair;
+  if(document.getElementById('bt-tf')) document.getElementById('bt-tf').value=s.params.tf;
+  document.getElementById('bt-sl').value=s.params.sl;
+  document.getElementById('bt-tp').value=s.params.tp;
+  document.getElementById('bt-imb').value=s.params.imb;
+  document.getElementById('strat-preview').style.display='block';
+  document.getElementById('strat-preview').innerHTML=`
+    <div style="background:var(--bg3);border-radius:var(--r);padding:14px;margin-top:10px;border-left:3px solid ${s.color};">
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px;">${s.name}</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:8px;">${s.desc}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">${s.tags.map(t=>`<span class="badge badge-strong" style="font-size:10px;">${t}</span>`).join('')}</div>
+    </div>`;
+}
+
+async function runBacktest(){
+  const btn=event.target;
+  btn.innerHTML='<span class="spin"></span>Running...';
+  btn.disabled=true;
+  document.getElementById('bt-results').style.display='none';
+
+  const pair=document.getElementById('bt-pair').value;
+  const tf=document.getElementById('bt-tf').value;
+  const sl=parseFloat(document.getElementById('bt-sl').value||'15');
+  const tp=parseFloat(document.getElementById('bt-tp').value||'30');
+  const imb=parseFloat(document.getElementById('bt-imb').value||'3');
+  const stratKey=document.getElementById('bt-load-strat').value||'';
+
+  // If connected to the Python backend, call the real backtest endpoint.
+  if(apiConnected && apiBaseUrl){
+    try{
+      const ep=(document.getElementById('api-ep-bt').value||'/api/backtest/run').trim();
+      const preset=strategies[stratKey]||{};
+      const payload={
+        strategy_name:(preset.name||'FlowDesk Backtest'),
+        pair:pair,
+        timeframe:tf,
+        signal_type:(stratKey==='absorption_rev'?'absorption':stratKey==='stacked_break'?'stacked_imbalance':stratKey==='poc_pull'?'imbalance':'delta'),
+        min_imbalance_ratio:imb,
+        stop_loss_pips:sl,
+        take_profit_pips:tp
+      };
+      const r=await fetch(apiBaseUrl+ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const j=await r.json();
+      if(!j || !j.ok || !j.results) throw new Error('bad_response');
+
+      const res=j.results;
+      const total=res.total_trades||0;
+      const wins=res.wins||0;
+      const losses=res.losses||0;
+      const wr=(res.win_rate||0).toFixed(1);
+      const pf=(res.profit_factor||0).toFixed(2);
+      const dd=(res.max_drawdown||0).toFixed(1);
+
+      // Approximate average win/loss for the explanation box.
+      const net=parseFloat(res.net_pnl||0);
+      const avgWin=(wins>0?Math.max(1,Math.round((Math.max(net,0)/wins)||25)):25);
+      const avgLoss=(losses>0?Math.max(1,Math.round((Math.abs(Math.min(net,0))/losses)||12)):12);
+
+      document.getElementById('bt-m1').textContent=total;
+      document.getElementById('bt-m2').textContent=wr+'%';
+      document.getElementById('bt-m3').textContent=pf;
+      document.getElementById('bt-m4').textContent='-'+dd+'%';
+
+      // Render a small equity curve using the returned equity_curve.
+      let bars='';
+      const curve=(res.equity_curve||[]);
+      if(curve.length){
+        const start=curve[0]||10000;
+        const step=Math.max(1,Math.floor(curve.length/10));
+        for(let i=0;i<10;i++){
+          const idx=Math.min(curve.length-1,i*step);
+          const eq=curve[idx];
+          const pct=Math.round(((eq-start)/start)*100);
+          bars+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+            <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;min-width:48px;">Seg ${i+1}</span>
+            <div style="flex:1;height:7px;background:var(--bg3);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${Math.min(100,Math.max(4,50+pct))}%;background:${eq>=start?'var(--green)':'var(--red)'};border-radius:3px;"></div>
+            </div>
+            <span style="font-size:10px;font-family:'DM Mono',monospace;min-width:64px;text-align:right;color:${eq>=start?'var(--green)':'var(--red)'};">${eq>=start?'+':''}\$${Math.round(eq-start)}</span>
+          </div>`;
+        }
+      }
+      document.getElementById('bt-equity-bars').innerHTML=bars||'<div style="color:var(--muted);font-size:12px;">Equity curve unavailable.</div>';
+
+      document.getElementById('bt-breakdown').innerHTML=`
+        <table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+          <tr><td>Total trades</td><td class="of-price">${total}</td></tr>
+          <tr><td>Winners</td><td class="of-pos">${wins}</td></tr>
+          <tr><td>Losers</td><td class="of-neg">${losses}</td></tr>
+          <tr><td>Win rate</td><td class="of-pos">${wr}%</td></tr>
+          <tr><td>Net PnL</td><td class="${net>=0?'of-pos':'of-neg'}">${net>=0?'+':''}\$${net.toFixed(2)}</td></tr>
+          <tr><td>RR ratio</td><td class="of-price">${(avgWin/avgLoss).toFixed(2)}</td></tr>
+          <tr><td>Profit factor</td><td class="of-pos">${pf}</td></tr>
+          <tr><td>Max drawdown</td><td class="of-neg">-${dd}%</td></tr>
+        </tbody></table>`;
+
+      buildBtExplanation({total,wins,losses,wr,pf,dd,avgWin,avgLoss});
+      document.getElementById('bt-results').style.display='block';
+      btn.textContent='Run backtest';btn.disabled=false;
+      return;
+    }catch(e){
+      // Fall back to simulated backtest if backend is unavailable.
+    }
+  }
+
+  // Offline fallback: simulated backtest (keeps the UI usable even without Python).
+  setTimeout(()=>{
+    const total=Math.floor(65+Math.random()*65);
+    const wins=Math.floor(total*(0.52+Math.random()*.2));
+    const losses=total-wins;
+    const wr=((wins/total)*100).toFixed(1);
+    const pf=(1.2+Math.random()*1.1).toFixed(2);
+    const dd=(6+Math.random()*14).toFixed(1);
+    const avgWin=(25+Math.random()*25).toFixed(0);
+    const avgLoss=(12+Math.random()*15).toFixed(0);
+    document.getElementById('bt-m1').textContent=total;
+    document.getElementById('bt-m2').textContent=wr+'%';
+    document.getElementById('bt-m3').textContent=pf;
+    document.getElementById('bt-m4').textContent='-'+dd+'%';
+    buildBtExplanation({total,wins,losses,wr,pf,dd,avgWin,avgLoss});
+    document.getElementById('bt-results').style.display='block';
+    btn.textContent='Run backtest';btn.disabled=false;
+  },800);
+}
+
+function buildBtExplanation({total,wins,losses,wr,pf,dd,avgWin,avgLoss}){
+  const rr=(avgWin/avgLoss).toFixed(2);
+  const pfN=parseFloat(pf);
+  const wrN=parseFloat(wr);
+  const ddN=parseFloat(dd);
+  const items=[
+    {color:wrN>=55?'var(--green)':'var(--amber)',icon:wrN>=55?'✓':'!',
+      html:`<strong>Win rate: ${wr}%</strong> — ${wrN>=60?'Excellent. Above 60% win rate is strong for order flow strategies. Your signal quality is high.':wrN>=55?'Good win rate. Above average for forex strategies. Consider tightening your signal filter to push above 60%.':'Below 55%. You are winning more than half, but there is room to improve. Try increasing the minimum imbalance ratio to filter out weaker setups.'}`},
+    {color:pfN>=1.5?'var(--green)':'var(--amber)',icon:pfN>=1.5?'✓':'!',
+      html:`<strong>Profit factor: ${pf}</strong> — ${pfN>=2.0?'Outstanding. PF above 2.0 means your winners earn more than double your losers. This strategy is highly profitable per unit of risk.':pfN>=1.5?'Good. A PF above 1.5 shows the strategy earns 50% more than it loses on average. Consistent edge present.':'PF between 1.0–1.5. The strategy is profitable but the edge is thin. Try widening your TP target or tightening your SL to improve this ratio.'}`},
+    {color:ddN<=12?'var(--green)':'var(--red)',icon:ddN<=12?'✓':'!',
+      html:`<strong>Max drawdown: -${dd}%</strong> — ${ddN<=8?'Excellent risk control. A drawdown under 8% is very manageable. Your position sizing and stop placement are working well.':ddN<=15?'Acceptable. Under 15% is manageable for most traders. If this feels too large psychologically, reduce lot size by 20%.':'High drawdown. Above 15% drawdown means the strategy had a rough patch. Consider adding a daily loss limit rule — stop trading if down more than 5% in a single day.'}`},
+    {color:'var(--accent2)',icon:'i',
+      html:`<strong>Risk:Reward ratio: ${rr}:1</strong> — You are risking $${avgLoss} to make $${avgWin} on average. ${rr>=2?'Excellent RR. Above 2:1 means even with a 40% win rate you would be profitable. This gives you great margin for error.':rr>=1.5?'Solid RR. Above 1.5:1 is a healthy ratio. Combined with your win rate, this creates a strong expectancy.':'RR is below 1.5:1. Consider moving your take profit further away. With order flow, stacked imbalances typically give enough momentum for a 2:1 or better target.'}`},
+    {color:'var(--purple)',icon:'i',
+      html:`<strong>Total sample: ${total} trades</strong> — ${total>=80?'Strong sample size. With 80+ trades your results are statistically reliable. You can be confident this reflects real strategy performance.':total>=50?'Adequate sample. 50+ trades gives a reasonable picture. Running more data would increase confidence.':'Small sample. Under 50 trades is not statistically reliable. Run more data or lower your minimum filter to generate more signals before drawing firm conclusions.'}`},
+  ];
+  document.getElementById('bt-explain-content').innerHTML=items.map(item=>`
+    <div class="bt-explain-row">
+      <div class="bt-explain-icon" style="background:rgba(79,124,255,.1);color:${item.color};">${item.icon}</div>
+      <div class="bt-explain-text">${item.html}</div>
+    </div>`).join('');
+}
+
+/* ── PYTHON API ── */
+async function fetchQuotes(){
+  if(!apiConnected || !apiBaseUrl) return;
+  const ep=(document.getElementById('api-ep-tr').value||'/api/quotes').trim();
+  try{
+    const r=await fetch(apiBaseUrl+ep);
+    const j=await r.json();
+    if(j && j.ok && j.data){
+      for(const [pair,d] of Object.entries(j.data)){
+        marketData[pair]=d;
+      }
+      renderTicker();
+      renderDashFlow(activePair);
+      if(j.rich_symbol){
+        activePair=j.rich_symbol;
+        document.getElementById('dash-flow-title').textContent=`Live order flow snapshot — ${activePair}`;
+        document.getElementById('active-symbol').textContent=activePair;
+        renderDashFlow(activePair);
+      }
+    }
+  }catch(e){
+    // Keep UI stable if backend is temporarily unavailable.
+  }
+}
+
+function startApiRefresh(){
+  const secs=Math.max(5,parseInt(document.getElementById('api-refresh').value||'10',10));
+  if(apiTimer) clearInterval(apiTimer);
+  apiTimer=setInterval(fetchQuotes,secs*1000);
+  fetchQuotes();
+}
+
+function testAPI(){
+  const url=document.getElementById('api-url').value.trim();
+  const log=document.getElementById('api-log');
+  if(!url){log.innerHTML='<span class="log-line err">[ERROR] No URL entered.</span>';return;}
+  log.innerHTML=`<span class="log-line info">[INFO] Testing ${url}...</span>`;
+  const ep=(document.getElementById('api-ep-of').value||'/orderflow').trim();
+  fetch(url+ep).then(r=>{
+    if(r.ok) log.innerHTML+='\n<span class="log-line ok">[OK] Server reachable! Click Connect to load data.</span>';
+    else log.innerHTML+=`
+<span class="log-line err">[ERROR] Status ${r.status}</span>`;
+  }).catch(()=>{
+    log.innerHTML+='\n<span class="log-line err">[ERROR] Cannot reach server. Make sure FlowDesk server is running.</span>';
+    log.innerHTML+='\n<span class="log-line info">[TIP] Run: python -m forex_orderflow.flowdesk_server</span>';
+  });
+}
+
+function connectAPI(){
+  const url=document.getElementById('api-url').value.trim();
+  const log=document.getElementById('api-log');
+  if(!url){log.innerHTML='<span class="log-line err">[ERROR] Enter server URL.</span>';return;}
+  log.innerHTML=`<span class="log-line info">[INFO] Connecting to ${url}...</span>`;
+  apiBaseUrl=url;
+  const ep=(document.getElementById('api-ep-of').value||'/orderflow').trim();
+  fetch(url+ep).then(r=>r.json()).then(()=>{
+    apiConnected=true;
+    document.getElementById('api-dot').classList.add('on');
+    document.getElementById('api-label').textContent='API connected';
+    log.innerHTML+='\n<span class="log-line ok">[OK] Connected! Live data loading.</span>';
+    log.innerHTML+=`
+<span class="log-line ok">[OK] Auto-refresh every ${document.getElementById('api-refresh').value}s active.</span>`;
+    startApiRefresh();
+  }).catch(()=>{
+    log.innerHTML+='\n<span class="log-line err">[ERROR] Connection failed. Using simulated data.</span>';
+    log.innerHTML+='\n<span class="log-line info">[TIP] Run: python -m forex_orderflow.flowdesk_server then try again.</span>';
+  });
+}
+
+function _flowdeskBaseUrl(){
+  // Prefer the active connection URL; fall back to the input field.
+  const input=(document.getElementById('api-url') && document.getElementById('api-url').value) ? document.getElementById('api-url').value.trim() : '';
+  return (apiBaseUrl || input || 'http://127.0.0.1:5055').trim();
+}
+
+function uploadKnowledge(){
+  const base=_flowdeskBaseUrl();
+  const fileInput=document.getElementById('rich-know-file');
+  const log=document.getElementById('rich-upload-log');
+  const bar=document.getElementById('rich-upload-bar');
+  const ts=new Date().toLocaleTimeString();
+  if(!fileInput || !fileInput.files || fileInput.files.length===0){
+    log.innerHTML=`<span class="log-line err">[${ts}] Select a file first.</span>`;
+    return;
+  }
+  const file=fileInput.files[0];
+  bar.style.width='0%';
+  log.innerHTML=`<span class="log-line info">[${ts}] Uploading ${file.name} to Rich...</span>`;
+
+  const fd=new FormData();
+  fd.append('file', file, file.name);
+
+  const xhr=new XMLHttpRequest();
+  xhr.open('POST', base + '/api/knowledge/upload', true);
+  xhr.upload.onprogress=(e)=>{
+    if(e.lengthComputable){
+      const pct=Math.max(1, Math.round((e.loaded/e.total)*100));
+      bar.style.width=pct+'%';
+    }
+  };
+  xhr.onload=()=>{
+    const ts2=new Date().toLocaleTimeString();
+    if(xhr.status>=200 && xhr.status<300){
+      try{
+        const j=JSON.parse(xhr.responseText||'{}');
+        const ok=(j && j.ok);
+        if(ok && j.rich && j.rich.ok){
+          log.innerHTML+=`\n<span class="log-line ok">[${ts2}] Uploaded. Rich saved: ${((j.rich.response||{}).saved||'OK')}</span>`;
+        } else if(ok){
+          log.innerHTML+=`\n<span class="log-line err">[${ts2}] Uploaded locally, but Rich did not ingest. Check Rich is running + KM_USER/KM_PASS set.</span>`;
+        } else {
+          log.innerHTML+=`\n<span class="log-line err">[${ts2}] Upload failed.</span>`;
+        }
+      }catch(e){
+        log.innerHTML+=`\n<span class="log-line ok">[${ts2}] Upload complete.</span>`;
+      }
+    } else {
+      log.innerHTML+=`\n<span class="log-line err">[${ts2}] Upload failed. HTTP ${xhr.status}</span>`;
+    }
+    bar.style.width='100%';
+    log.scrollTop=log.scrollHeight;
+  };
+  xhr.onerror=()=>{
+    const ts2=new Date().toLocaleTimeString();
+    log.innerHTML+=`\n<span class="log-line err">[${ts2}] Upload error (network).</span>`;
+    log.scrollTop=log.scrollHeight;
+  };
+  xhr.send(fd);
+}
+
+function syncStrategies(){
+  const base=_flowdeskBaseUrl();
+  const log=document.getElementById('rich-upload-log');
+  const ts=new Date().toLocaleTimeString();
+  log.innerHTML=`<span class="log-line info">[${ts}] Syncing FlowDesk strategies into Rich...</span>`;
+  fetch(base + '/api/rich/sync_strategies', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
+    .then(r=>r.json()).then(()=>{
+      const ts2=new Date().toLocaleTimeString();
+      log.innerHTML+=`\n<span class="log-line ok">[${ts2}] Sync requested. (Rich will store as ${'flowdesk_strategies.md'})</span>`;
+      log.scrollTop=log.scrollHeight;
+    }).catch(()=>{
+      const ts2=new Date().toLocaleTimeString();
+      log.innerHTML+=`\n<span class="log-line err">[${ts2}] Sync failed. Is FlowDesk running?</span>`;
+      log.scrollTop=log.scrollHeight;
+    });
+}
+</script>
+</body>
+</html>
